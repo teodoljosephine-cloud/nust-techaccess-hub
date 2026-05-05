@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>NUST TechAccess Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@600;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--navy:#003B5C;--orange:#E8611A;--amber:#F5A623;--chalk:#F7F4EF;--dark:#0D1B2A;--mid:#4A6785;--border:#CBD5E1;--open:#16A34A;--busy:#DC2626;--closed:#64748B;--shadow:0 2px 12px rgba(0,59,92,.10);--radius:12px;--font-head:'Syne',sans-serif;--font-mono:'Space Mono',monospace}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{font-family:var(--font-mono);background:var(--chalk);color:var(--dark);min-height:100vh;max-width:480px;margin:0 auto;overflow-x:hidden}
+
+.topbar{background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.topbar-left{display:flex;align-items:center;gap:.6rem}
+.logo-mark{width:38px;height:38px;background:var(--orange);border-radius:8px;display:grid;place-items:center;font-family:var(--font-head);font-size:1.4rem;font-weight:800;color:#fff;flex-shrink:0}
+.logo-title{font-family:var(--font-head);font-size:.95rem;font-weight:800;line-height:1.1;letter-spacing:-.02em}
+.logo-sub{font-size:.62rem;color:rgba(255,255,255,.55);letter-spacing:.06em;text-transform:uppercase}
+.topbar-right{display:flex;align-items:center;gap:.5rem}
+.badge{font-size:.58rem;font-weight:700;padding:.2rem .5rem;border-radius:99px;letter-spacing:.05em;text-transform:uppercase}
+.badge-online{background:rgba(22,163,74,.2);color:#4ade80}
+.badge-offline{background:rgba(220,38,38,.2);color:#f87171}
+.btn-icon{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;cursor:pointer;display:flex;align-items:center;gap:.3rem;padding:.35rem .6rem;font-size:.62rem;font-family:var(--font-mono);transition:background .2s}
+.btn-icon:hover{background:rgba(255,255,255,.18)}
+
+.datasaver-banner{background:var(--amber);color:var(--dark);font-size:.72rem;font-weight:700;padding:.5rem 1rem;text-align:center}
+.link-btn{background:none;border:none;text-decoration:underline;cursor:pointer;font-family:var(--font-mono);font-weight:700;font-size:inherit;color:var(--dark)}
+
+.tab-nav{display:flex;background:var(--dark);border-bottom:2px solid var(--orange)}
+.tab{flex:1;padding:.75rem .25rem;background:none;border:none;color:rgba(255,255,255,.45);font-family:var(--font-mono);font-size:.68rem;font-weight:700;letter-spacing:.03em;cursor:pointer;transition:color .2s,background .2s;text-transform:uppercase}
+.tab.active{color:var(--orange);background:rgba(232,97,26,.08);border-bottom:2px solid var(--orange);margin-bottom:-2px}
+
+.main-content{padding:1rem}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.section-header{margin-bottom:1rem}
+.section-title{font-family:var(--font-head);font-size:1.2rem;font-weight:800;color:var(--navy);line-height:1.2}
+.section-sub{font-size:.7rem;color:var(--mid);margin-top:.15rem}
+
+.search-wrap{position:relative;margin-bottom:.75rem}
+.search-input{width:100%;padding:.65rem 1rem .65rem 2.4rem;border:2px solid var(--border);border-radius:var(--radius);font-family:var(--font-mono);font-size:.8rem;background:#fff;color:var(--dark);outline:none;transition:border-color .2s}
+.search-input:focus{border-color:var(--navy)}
+.search-icon{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--mid);pointer-events:none}
+
+.chip-row{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem}
+.chip{background:#fff;border:1.5px solid var(--border);border-radius:99px;padding:.25rem .75rem;font-family:var(--font-mono);font-size:.65rem;font-weight:700;color:var(--mid);cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:.04em}
+.chip.chip-active,.chip:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+.lab-list{display:flex;flex-direction:column;gap:.75rem}
+.lab-card{background:#fff;border:2px solid var(--border);border-radius:var(--radius);padding:1rem;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s}
+.lab-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,59,92,.15)}
+.lab-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px}
+.lab-card.status-open::before{background:var(--open)}
+.lab-card.status-busy::before{background:var(--busy)}
+.lab-card.status-closed::before{background:var(--closed)}
+.lab-header{display:flex;justify-content:space-between;align-items:flex-start}
+.lab-name{font-family:var(--font-head);font-size:.95rem;font-weight:800;color:var(--navy);flex:1;padding-right:.5rem}
+.status-pill{font-size:.58rem;font-weight:700;padding:.2rem .55rem;border-radius:99px;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0}
+.status-pill.open{background:#DCFCE7;color:var(--open)}
+.status-pill.busy{background:#FEE2E2;color:var(--busy)}
+.status-pill.closed{background:#F1F5F9;color:var(--closed)}
+.lab-meta{margin-top:.5rem;display:flex;gap:.75rem;flex-wrap:wrap}
+.lab-meta span{font-size:.67rem;color:var(--mid)}
+.lab-meta strong{color:var(--dark)}
+.busy-bar-wrap{margin-top:.6rem}
+.busy-label{font-size:.62rem;color:var(--mid);margin-bottom:.2rem}
+.busy-bar{height:6px;background:var(--border);border-radius:99px;overflow:hidden}
+.busy-bar-fill{height:100%;border-radius:99px;transition:width .5s ease}
+.fill-open{background:var(--open)}.fill-busy{background:var(--busy)}.fill-closed{background:var(--closed)}
+.lab-note{font-size:.65rem;color:var(--mid);margin-top:.5rem}
+
+/* ── Storage bar ── */
+.storage-bar-wrap{background:#fff;border:2px solid var(--border);border-radius:var(--radius);padding:.75rem 1rem;margin-bottom:1rem;display:flex;align-items:center;gap:.75rem}
+.storage-icon{font-size:1.2rem;flex-shrink:0}
+.storage-info{flex:1}
+.storage-label{font-size:.68rem;font-weight:700;color:var(--navy);margin-bottom:.3rem}
+.storage-track{height:6px;background:var(--border);border-radius:99px;overflow:hidden}
+.storage-fill{height:100%;border-radius:99px;background:var(--orange);transition:width .5s}
+.storage-text{font-size:.6rem;color:var(--mid);margin-top:.3rem}
+
+/* ── Drop zone ── */
+.upload-zone{border:2.5px dashed var(--border);border-radius:var(--radius);background:#fff;padding:1.75rem 1rem;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;margin-bottom:1rem;position:relative}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--orange);background:rgba(232,97,26,.04)}
+.upload-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:2.2rem;margin-bottom:.5rem}
+.upload-title{font-family:var(--font-head);font-size:1rem;font-weight:800;color:var(--navy)}
+.upload-sub{font-size:.7rem;color:var(--mid);margin-top:.2rem}
+.upload-types{font-size:.6rem;color:var(--mid);margin-top:.5rem;background:var(--chalk);border:1px solid var(--border);padding:.3rem .7rem;border-radius:6px;display:inline-block}
+
+/* ── Upload form ── */
+.upload-form{background:#fff;border:2px solid var(--border);border-radius:var(--radius);padding:1rem;box-shadow:var(--shadow);margin-bottom:1rem}
+.upload-form-title{font-family:var(--font-head);font-size:.95rem;font-weight:800;color:var(--navy);margin-bottom:.75rem}
+.form-row{display:flex;flex-direction:column;gap:.55rem}
+.form-input{width:100%;padding:.6rem .85rem;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font-mono);font-size:.78rem;background:var(--chalk);color:var(--dark);outline:none;transition:border-color .2s}
+.form-input:focus{border-color:var(--navy);background:#fff}
+
+/* ── File preview ── */
+.file-preview{background:var(--chalk);border:1.5px solid var(--border);border-radius:8px;padding:.65rem .85rem;display:flex;align-items:center;gap:.75rem}
+.file-preview-icon{font-size:1.5rem;flex-shrink:0}
+.file-preview-info{flex:1;min-width:0}
+.file-preview-name{font-size:.75rem;font-weight:700;color:var(--dark);word-break:break-all;line-height:1.3}
+.file-preview-size{font-size:.62rem;color:var(--mid);margin-top:.1rem}
+.file-preview-remove{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--busy);font-size:1.1rem;flex-shrink:0;padding:.2rem .3rem;border-radius:4px;transition:background .2s}
+.file-preview-remove:hover{background:#FEE2E2}
+
+/* ── Progress ── */
+.progress-wrap{display:none;margin:.25rem 0}
+.progress-wrap.visible{display:block}
+.progress-bar-bg{height:8px;background:var(--border);border-radius:99px;overflow:hidden}
+.progress-bar-fill{height:100%;background:var(--orange);border-radius:99px;width:0%;transition:width .15s linear}
+.progress-label{font-size:.65rem;color:var(--mid);margin-top:.3rem;text-align:center}
+
+/* ── Buttons ── */
+.btn-primary{background:var(--orange);color:#fff;border:none;padding:.72rem 1rem;border-radius:8px;font-family:var(--font-head);font-size:.9rem;font-weight:800;cursor:pointer;width:100%;transition:background .2s,transform .15s;display:flex;align-items:center;justify-content:center;gap:.4rem}
+.btn-primary:hover:not(:disabled){background:#c94f10;transform:translateY(-1px)}
+.btn-primary:disabled{background:var(--border);color:var(--mid);cursor:not-allowed;transform:none}
+.btn-sm{padding:.38rem .8rem;font-size:.68rem;font-family:var(--font-mono);font-weight:700;border-radius:6px;border:none;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:.25rem}
+.btn-download{background:var(--navy);color:#fff}
+.btn-download:hover{background:#005580}
+.btn-preview{background:#EDE9FE;color:#5B21B6}
+.btn-preview:hover{background:#DDD6FE}
+.btn-delete{background:#FEE2E2;color:var(--busy)}
+.btn-delete:hover{background:#FECACA}
+
+/* ── File cards ── */
+.share-list{display:flex;flex-direction:column;gap:.75rem}
+.share-card{background:#fff;border:2px solid var(--border);border-radius:var(--radius);padding:.9rem 1rem;box-shadow:var(--shadow)}
+.share-card-top{display:flex;align-items:flex-start;gap:.75rem}
+.share-file-icon{width:44px;height:44px;border-radius:9px;display:grid;place-items:center;font-size:1.4rem;flex-shrink:0}
+.icon-pdf{background:#FEE2E2}.icon-ppt{background:#FEF3C7}.icon-video{background:#EDE9FE}.icon-doc{background:#DBEAFE}.icon-img{background:#D1FAE5}.icon-other{background:#F1F5F9}
+.share-info{flex:1;min-width:0}
+.share-name{font-family:var(--font-head);font-size:.88rem;font-weight:800;color:var(--navy);word-break:break-word;line-height:1.3}
+.share-tags{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.35rem;align-items:center}
+.tag{font-size:.55rem;font-weight:700;padding:.12rem .45rem;border-radius:4px;text-transform:uppercase;letter-spacing:.04em}
+.tag-type{background:var(--amber);color:var(--dark)}
+.tag-size{background:var(--chalk);color:var(--mid);border:1px solid var(--border)}
+.share-uploader{font-size:.63rem;color:var(--mid);margin-top:.3rem;line-height:1.5}
+.share-actions{display:flex;gap:.4rem;margin-top:.75rem;flex-wrap:wrap}
+.share-empty{text-align:center;color:var(--mid);font-size:.8rem;padding:2.5rem 0;line-height:2}
+.share-empty-icon{font-size:2.5rem;display:block;margin-bottom:.4rem}
+
+/* ── Media preview modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem}
+.modal-close{position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1.3rem;width:36px;height:36px;border-radius:50%;cursor:pointer;display:grid;place-items:center}
+.modal-close:hover{background:rgba(255,255,255,.3)}
+.modal-inner{max-width:440px;width:100%;max-height:80vh;overflow:auto;background:#fff;border-radius:var(--radius);padding:1rem}
+.modal-title{font-family:var(--font-head);font-size:.9rem;font-weight:800;color:var(--navy);margin-bottom:.75rem;word-break:break-word}
+.modal-inner iframe,.modal-inner video,.modal-inner img{width:100%;border-radius:8px;max-height:60vh;object-fit:contain}
+
+/* ── About ── */
+.about-card{background:#fff;border:2px solid var(--border);border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow);text-align:center}
+.about-logo{width:64px;height:64px;background:var(--navy);border-radius:14px;margin:0 auto .75rem;display:grid;place-items:center;font-family:var(--font-head);font-size:2.2rem;font-weight:800;color:#fff}
+.about-name{font-family:var(--font-head);font-size:1.1rem;font-weight:800;color:var(--navy)}
+.about-desc{font-size:.75rem;color:var(--mid);margin-top:.5rem;line-height:1.6}
+.divider{border:none;border-top:2px dashed var(--border);margin:1rem 0}
+.feature-list{list-style:none;text-align:left;display:flex;flex-direction:column;gap:.85rem}
+.feature-list li{display:flex;gap:.75rem;align-items:flex-start}
+.feature-icon{font-size:1.2rem;flex-shrink:0}
+.feature-list strong{font-size:.82rem;color:var(--dark);display:block}
+.feature-list small{font-size:.67rem;color:var(--mid)}
+.about-footer{font-size:.62rem;color:var(--mid);line-height:1.8}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--dark);color:#fff;padding:.6rem 1.25rem;border-radius:99px;font-size:.75rem;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,.35);z-index:999;white-space:nowrap;opacity:1;transition:opacity .3s;pointer-events:none}
+.toast.fade{opacity:0}
+.hidden{display:none!important}
+.mt1{margin-top:1rem}
+
+/* ── Data Saver ── */
+body.data-saver .topbar{background:#000;box-shadow:none}
+body.data-saver .logo-mark{background:none;border:1px solid #fff;font-size:1rem}
+body.data-saver .tab-nav{background:#111;border-bottom-color:#fff}
+body.data-saver .tab.active{color:#fff;background:none;border-bottom-color:#fff}
+body.data-saver{background:#fff}
+body.data-saver .lab-card,body.data-saver .upload-form,body.data-saver .share-card,body.data-saver .about-card,body.data-saver .storage-bar-wrap,body.data-saver .upload-zone{background:#fff;border:1px solid #000;border-radius:0;box-shadow:none}
+body.data-saver .lab-card::before,body.data-saver .busy-bar-wrap,body.data-saver .about-logo,body.data-saver .share-file-icon{display:none}
+body.data-saver .upload-zone{border-style:dashed}
+body.data-saver .btn-primary,body.data-saver .btn-sm,body.data-saver .chip,body.data-saver .form-input,body.data-saver .file-preview{border-radius:0}
+</style>
+</head>
+<body id="appBody">
+
+<!-- Topbar -->
+<header class="topbar">
+  <div class="topbar-left">
+    <span class="logo-mark">N</span>
+    <div>
+      <p class="logo-title">TechAccess Hub</p>
+      <p class="logo-sub">NUST · Windhoek</p>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span id="offlineBadge" class="badge badge-offline hidden">● OFFLINE</span>
+    <span id="onlineBadge" class="badge badge-online">● ONLINE</span>
+    <button class="btn-icon" onclick="toggleDataSaver()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Data Saver
+    </button>
+  </div>
+</header>
+
+<div id="dataSaverBanner" class="datasaver-banner hidden">
+  ⚡ Data Saver ON — Minimal view. <button onclick="toggleDataSaver()" class="link-btn">Turn off</button>
+</div>
+
+<nav class="tab-nav">
+  <button class="tab active" onclick="switchTab('labs',this)">🖥 Labs</button>
+  <button class="tab" onclick="switchTab('share',this)">📂 Share</button>
+  <button class="tab" onclick="switchTab('about',this)">ℹ About</button>
+</nav>
+
+<main class="main-content">
+
+  <!-- ══ LABS ══ -->
+  <section id="tab-labs" class="tab-panel active">
+    <div class="section-header">
+      <h2 class="section-title">Campus Computer Labs</h2>
+      <p class="section-sub">Live status · Find an open lab near you</p>
+    </div>
+    <div class="search-wrap">
+      <input type="search" id="labSearch" placeholder="Search labs…" oninput="renderLabs()" class="search-input"/>
+      <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </div>
+    <div class="chip-row">
+      <button class="chip chip-active" onclick="filterByStatus('all',this)">All</button>
+      <button class="chip" onclick="filterByStatus('open',this)">Open</button>
+      <button class="chip" onclick="filterByStatus('busy',this)">Busy</button>
+      <button class="chip" onclick="filterByStatus('closed',this)">Closed</button>
+    </div>
+    <div id="labList" class="lab-list"></div>
+  </section>
+
+  <!-- ══ PEER SHARE ══ -->
+  <section id="tab-share" class="tab-panel hidden">
+    <div class="section-header">
+      <h2 class="section-title">Peer-Sharing Portal</h2>
+      <p class="section-sub">Upload real files · Download to share via Bluetooth / ShareIt</p>
+    </div>
+
+    <!-- Storage indicator -->
+    <div class="storage-bar-wrap">
+      <span class="storage-icon">💾</span>
+      <div class="storage-info">
+        <div class="storage-label">Device Storage Used</div>
+        <div class="storage-track"><div class="storage-fill" id="storageFill" style="width:0%"></div></div>
+        <div class="storage-text" id="storageText">Calculating…</div>
+      </div>
+    </div>
+
+    <!-- Drop zone -->
+    <div class="upload-zone" id="dropZone">
+      <input type="file" id="fileInput" multiple
+        accept=".pdf,.ppt,.pptx,.doc,.docx,.txt,.mp4,.mov,.avi,.mkv,.webm,.jpg,.jpeg,.png,.gif,.zip"
+        onchange="handleFileSelect(event)"/>
+      <div class="upload-icon">📁</div>
+      <div class="upload-title">Tap to choose files</div>
+      <div class="upload-sub">or drag &amp; drop here</div>
+      <div class="upload-types">PDF · PPTX · DOC · MP4 · MOV · Images · ZIP</div>
+    </div>
+
+    <!-- Upload form (shown after file is selected) -->
+    <div id="uploadForm" class="upload-form hidden">
+      <div class="upload-form-title">📤 Complete Your Upload</div>
+      <div class="form-row">
+        <div id="filePreviewList"></div>
+        <input id="uploaderName" type="text" placeholder="Your name or student number" class="form-input"/>
+        <input id="uploaderSubject" type="text" placeholder="Subject / Course code (e.g. DBF510S)" class="form-input"/>
+        <div class="progress-wrap" id="progressWrap">
+          <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+          <div class="progress-label" id="progressLabel">Saving…</div>
+        </div>
+        <button class="btn-primary" id="uploadBtn" onclick="uploadFiles()">⬆ Save to Device</button>
+      </div>
+    </div>
+
+    <!-- File list -->
+    <div class="section-header mt1">
+      <h3 class="section-title" style="font-size:1rem">📂 Stored Files</h3>
+      <p class="section-sub" id="fileCount">Loading…</p>
+    </div>
+    <div id="shareList" class="share-list"></div>
+  </section>
+
+  <!-- ══ ABOUT ══ -->
+  <section id="tab-about" class="tab-panel hidden">
+    <div class="section-header"><h2 class="section-title">About This App</h2></div>
+    <div class="about-card">
+      <div class="about-logo">N</div>
+      <h3 class="about-name">NUST TechAccess Hub</h3>
+      <p class="about-desc">An offline-first Progressive Web App for NUST students — lightweight, device-friendly, and built to work even without internet.</p>
+      <hr class="divider"/>
+      <ul class="feature-list">
+        <li><span class="feature-icon">📁</span><div><strong>Real File Upload &amp; Download</strong><small>Upload PDFs, PPTXs, videos &amp; more. Files are saved directly to your device using IndexedDB — no server needed.</small></div></li>
+        <li><span class="feature-icon">👁</span><div><strong>In-App Preview</strong><small>Preview PDFs, images and videos right inside the app before downloading.</small></div></li>
+        <li><span class="feature-icon">📡</span><div><strong>Offline-First (PWA)</strong><small>Service Worker caches the app shell. Works without Wi-Fi after the first load.</small></div></li>
+        <li><span class="feature-icon">⚡</span><div><strong>Data Saver Mode</strong><small>Strips all styling to raw text — uses only a few kilobytes of data.</small></div></li>
+        <li><span class="feature-icon">📶</span><div><strong>Bluetooth / ShareIt Ready</strong><small>Download any file to your device, then share peer-to-peer — no internet needed.</small></div></li>
+      </ul>
+      <hr class="divider"/>
+      <p class="about-footer">Prototype v2.0 · Built by a NUST student for IT presentation.<br>Stack: HTML5 · CSS3 · Vanilla JS · IndexedDB · Service Worker</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- Preview modal -->
+<div id="previewModal" class="modal-overlay hidden">
+  <button class="modal-close" onclick="closePreview()">✕</button>
+  <div class="modal-inner">
+    <div class="modal-title" id="previewTitle"></div>
+    <div id="previewContent"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+/* ════════════════════════════════════════════════
+   NUST TechAccess Hub v2 — app.js (inline)
+   Real upload/download via IndexedDB
+   ════════════════════════════════════════════════ */
+
+// ── IndexedDB ─────────────────────────────────────
+const DB_NAME = 'NUSTHub', DB_VER = 2, STORE = 'files';
+let db = null;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    if (db) { resolve(db); return; }
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains(STORE)) {
+        const s = d.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
+        s.createIndex('uploadedAt', 'uploadedAt', { unique: false });
+      }
+    };
+    req.onsuccess = e => { db = e.target.result; resolve(db); };
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+const tx = (mode = 'readonly') => db.transaction(STORE, mode).objectStore(STORE);
+const dbAdd    = r  => new Promise((res,rej) => { const q = tx('readwrite').add(r); q.onsuccess=e=>res(e.target.result); q.onerror=e=>rej(e.target.error); });
+const dbGetAll = () => new Promise((res,rej) => { const q = tx().getAll(); q.onsuccess=e=>res(e.target.result); q.onerror=e=>rej(e.target.error); });
+const dbGet    = id => new Promise((res,rej) => { const q = tx().get(id); q.onsuccess=e=>res(e.target.result); q.onerror=e=>rej(e.target.error); });
+const dbDel    = id => new Promise((res,rej) => { const q = tx('readwrite').delete(id); q.onsuccess=()=>res(); q.onerror=e=>rej(e.target.error); });
+
+// ── Helpers ───────────────────────────────────────
+function getFileInfo(name = '', mime = '') {
+  const ext = name.split('.').pop().toLowerCase();
+  const map = {
+    pdf:  { icon:'📄', cls:'icon-pdf',   label:'PDF',   previewable:'pdf'   },
+    ppt:  { icon:'📊', cls:'icon-ppt',   label:'PPT',   previewable:false   },
+    pptx: { icon:'📊', cls:'icon-ppt',   label:'PPTX',  previewable:false   },
+    doc:  { icon:'📝', cls:'icon-doc',   label:'DOC',   previewable:false   },
+    docx: { icon:'📝', cls:'icon-doc',   label:'DOCX',  previewable:false   },
+    txt:  { icon:'📄', cls:'icon-doc',   label:'TXT',   previewable:'text'  },
+    mp4:  { icon:'🎥', cls:'icon-video', label:'MP4',   previewable:'video' },
+    mov:  { icon:'🎥', cls:'icon-video', label:'MOV',   previewable:'video' },
+    avi:  { icon:'🎥', cls:'icon-video', label:'AVI',   previewable:'video' },
+    mkv:  { icon:'🎥', cls:'icon-video', label:'MKV',   previewable:'video' },
+    webm: { icon:'🎥', cls:'icon-video', label:'WEBM',  previewable:'video' },
+    jpg:  { icon:'🖼', cls:'icon-img',   label:'JPG',   previewable:'image' },
+    jpeg: { icon:'🖼', cls:'icon-img',   label:'JPEG',  previewable:'image' },
+    png:  { icon:'🖼', cls:'icon-img',   label:'PNG',   previewable:'image' },
+    gif:  { icon:'🖼', cls:'icon-img',   label:'GIF',   previewable:'image' },
+    zip:  { icon:'🗜', cls:'icon-other', label:'ZIP',   previewable:false   },
+  };
+  return map[ext] || { icon:'📁', cls:'icon-other', label: ext.toUpperCase() || 'FILE', previewable: false };
+}
+
+function fmtSize(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  if (b < 1073741824) return (b/1048576).toFixed(1) + ' MB';
+  return (b/1073741824).toFixed(2) + ' GB';
+}
+
+function fmtDate(ts) {
+  return new Date(ts).toLocaleDateString('en-NA', { day:'numeric', month:'short', year:'numeric' });
+}
+
+// ── Pending file state ────────────────────────────
+let pendingFiles = [];
+
+function handleFileSelect(e) {
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+  pendingFiles = files;
+  renderPreviews();
+}
+
+// Drag & drop
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag-over');
+  const files = Array.from(e.dataTransfer.files);
+  if (files.length) { pendingFiles = files; renderPreviews(); }
+});
+
+function renderPreviews() {
+  const container = document.getElementById('filePreviewList');
+  container.innerHTML = pendingFiles.map((f, i) => {
+    const { icon } = getFileInfo(f.name, f.type);
+    return `
+      <div class="file-preview" id="fp-${i}">
+        <span class="file-preview-icon">${icon}</span>
+        <div class="file-preview-info">
+          <div class="file-preview-name">${f.name}</div>
+          <div class="file-preview-size">${fmtSize(f.size)}</div>
+        </div>
+        <button class="file-preview-remove" title="Remove" onclick="removePreview(${i})">✕</button>
+      </div>`;
+  }).join('');
+  document.getElementById('uploadForm').classList.toggle('hidden', pendingFiles.length === 0);
+}
+
+function removePreview(i) {
+  pendingFiles.splice(i, 1);
+  if (!pendingFiles.length) {
+    document.getElementById('uploadForm').classList.add('hidden');
+    document.getElementById('fileInput').value = '';
+  } else {
+    renderPreviews();
+  }
+}
+
+// ── Upload ────────────────────────────────────────
+async function uploadFiles() {
+  if (!pendingFiles.length) return;
+  const name    = document.getElementById('uploaderName').value.trim();
+  const subject = document.getElementById('uploaderSubject').value.trim();
+  if (!name || !subject) { showToast('⚠ Please enter your name and subject'); return; }
+
+  const btn = document.getElementById('uploadBtn');
+  const pw  = document.getElementById('progressWrap');
+  const pf  = document.getElementById('progressFill');
+  const pl  = document.getElementById('progressLabel');
+
+  btn.disabled = true; btn.textContent = '⏳ Saving…';
+  pw.classList.add('visible');
+
+  try {
+    await openDB();
+    for (let i = 0; i < pendingFiles.length; i++) {
+      const file = pendingFiles[i];
+      pl.textContent = `Saving ${i+1}/${pendingFiles.length}: ${file.name}`;
+      pf.style.width = Math.round(((i+0.5)/pendingFiles.length)*100) + '%';
+
+      // Read file as ArrayBuffer so it persists in IndexedDB
+      const buffer = await file.arrayBuffer();
+      await dbAdd({
+        name:       file.name,
+        size:       file.size,
+        mime:       file.type || 'application/octet-stream',
+        subject,
+        uploader:   name,
+        uploadedAt: Date.now(),
+        data:       buffer
+      });
+    }
+    pf.style.width = '100%';
+    pl.textContent = '✅ Done!';
+    await sleep(500);
+
+    // Reset
+    pendingFiles = [];
+    document.getElementById('fileInput').value = '';
+    document.getElementById('filePreviewList').innerHTML = '';
+    document.getElementById('uploadForm').classList.add('hidden');
+    document.getElementById('uploaderName').value = '';
+    document.getElementById('uploaderSubject').value = '';
+    pw.classList.remove('visible');
+    pf.style.width = '0%';
+    btn.disabled = false; btn.textContent = '⬆ Save to Device';
+
+    showToast('✅ Files saved to your device!');
+    await renderShareList();
+    await updateStorage();
+  } catch (err) {
+    showToast('❌ Save failed: ' + err.message);
+    btn.disabled = false; btn.textContent = '⬆ Save to Device';
+    pw.classList.remove('visible');
+  }
+}
+
+// ── Download ──────────────────────────────────────
+async function downloadFile(id) {
+  try {
+    await openDB();
+    const r = await dbGet(id);
+    if (!r) { showToast('❌ File not found'); return; }
+    const blob = new Blob([r.data], { type: r.mime });
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement('a'), { href: url, download: r.name });
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    showToast('⬇ Downloading: ' + r.name);
+  } catch (err) {
+    showToast('❌ Download failed: ' + err.message);
+  }
+}
+
+// ── Preview ───────────────────────────────────────
+async function previewFile(id) {
+  try {
+    await openDB();
+    const r = await dbGet(id);
+    if (!r) { showToast('❌ File not found'); return; }
+    const { previewable } = getFileInfo(r.name, r.mime);
+    if (!previewable) { showToast('ℹ Preview not available — use Download instead'); return; }
+
+    const blob = new Blob([r.data], { type: r.mime });
+    const url  = URL.createObjectURL(blob);
+    document.getElementById('previewTitle').textContent = r.name;
+    const content = document.getElementById('previewContent');
+
+    if (previewable === 'image') {
+      content.innerHTML = `<img src="${url}" alt="${r.name}" onload="URL.revokeObjectURL('${url}')"/>`;
+    } else if (previewable === 'video') {
+      content.innerHTML = `<video controls src="${url}" style="width:100%;border-radius:8px"></video>`;
+    } else if (previewable === 'pdf') {
+      content.innerHTML = `<iframe src="${url}" style="width:100%;height:60vh;border:none;border-radius:8px"></iframe>`;
+    } else if (previewable === 'text') {
+      const text = new TextDecoder().decode(r.data);
+      content.innerHTML = `<pre style="white-space:pre-wrap;font-size:.75rem;font-family:var(--font-mono);padding:.5rem;background:var(--chalk);border-radius:8px;max-height:55vh;overflow:auto">${escHtml(text)}</pre>`;
+    }
+
+    document.getElementById('previewModal').classList.remove('hidden');
+  } catch (err) {
+    showToast('❌ Preview failed: ' + err.message);
+  }
+}
+
+function closePreview() {
+  document.getElementById('previewModal').classList.add('hidden');
+  document.getElementById('previewContent').innerHTML = '';
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Delete ────────────────────────────────────────
+async function deleteFile(id, name) {
+  if (!confirm(`Delete "${name}"?\nThis cannot be undone.`)) return;
+  try {
+    await openDB();
+    await dbDel(id);
+    showToast('🗑 Deleted: ' + name);
+    await renderShareList();
+    await updateStorage();
+  } catch (err) {
+    showToast('❌ Delete failed: ' + err.message);
+  }
+}
+
+// ── Render file list ──────────────────────────────
+async function renderShareList() {
+  const list    = document.getElementById('shareList');
+  const countEl = document.getElementById('fileCount');
+  list.innerHTML = `<div class="share-empty"><span class="share-empty-icon">⏳</span>Loading…</div>`;
+
+  try {
+    await openDB();
+    const records = (await dbGetAll()).sort((a,b) => b.uploadedAt - a.uploadedAt);
+    countEl.textContent = records.length
+      ? `${records.length} file${records.length > 1 ? 's' : ''} stored on this device`
+      : 'No files yet — upload one above';
+
+    if (!records.length) {
+      list.innerHTML = `<div class="share-empty"><span class="share-empty-icon">📭</span>No files yet.<br>Upload a PDF, PPTX, video or image above!</div>`;
+      return;
+    }
+
+    list.innerHTML = records.map(r => {
+      const { icon, cls, label, previewable } = getFileInfo(r.name, r.mime);
+      const canPreview = !!previewable;
+      return `
+        <div class="share-card">
+          <div class="share-card-top">
+            <div class="share-file-icon ${cls}">${icon}</div>
+            <div class="share-info">
+              <div class="share-name">${r.name}</div>
+              <div class="share-tags">
+                <span class="tag tag-type">${label}</span>
+                <span class="tag tag-size">${fmtSize(r.size)}</span>
+              </div>
+              <div class="share-uploader">
+                📚 ${r.subject} &nbsp;·&nbsp; 👤 ${r.uploader}<br>📅 ${fmtDate(r.uploadedAt)}
+              </div>
+            </div>
+          </div>
+          <div class="share-actions">
+            <button class="btn-sm btn-download" onclick="downloadFile(${r.id})">⬇ Download</button>
+            ${canPreview ? `<button class="btn-sm btn-preview" onclick="previewFile(${r.id})">👁 Preview</button>` : ''}
+            <button class="btn-sm btn-delete" onclick="deleteFile(${r.id}, '${r.name.replace(/'/g,"\\'")}')">🗑 Delete</button>
+          </div>
+        </div>`;
+    }).join('');
+  } catch (err) {
+    list.innerHTML = `<div class="share-empty">❌ Could not load files: ${err.message}</div>`;
+  }
+}
+
+// ── Storage indicator ─────────────────────────────
+async function updateStorage() {
+  try {
+    await openDB();
+    const records = await dbGetAll();
+    const total   = records.reduce((s, r) => s + (r.size || 0), 0);
+    const CAP     = 50 * 1024 * 1024; // 50 MB guide
+    const pct     = Math.min(100, Math.round((total/CAP)*100));
+    document.getElementById('storageFill').style.width = pct + '%';
+    document.getElementById('storageText').textContent =
+      `${fmtSize(total)} used · ${records.length} file${records.length !== 1 ? 's' : ''} · ~50 MB available`;
+  } catch {
+    document.getElementById('storageText').textContent = 'Storage info unavailable';
+  }
+}
+
+// ── Labs ──────────────────────────────────────────
+const LABS = [
+  { id:1, name:"Main IT Lab (Block C)",     location:"Block C, Ground Floor", hours:"07:30 – 21:00", seats:40, occupied:12, status:"open",   notes:"Windows 10 · Fast Wi-Fi · Printing" },
+  { id:2, name:"Engineering Computing Lab", location:"Block A, Room 104",     hours:"08:00 – 18:00", seats:30, occupied:28, status:"busy",   notes:"AutoCAD & MATLAB installed" },
+  { id:3, name:"Library Digital Centre",    location:"Library, 1st Floor",    hours:"07:00 – 22:00", seats:50, occupied:10, status:"open",   notes:"Quiet zone · Printing · Scanning" },
+  { id:4, name:"Business School Lab",       location:"Block D, Room 201",     hours:"08:00 – 17:00", seats:25, occupied:25, status:"closed", notes:"Closed – reserved for exam prep" },
+  { id:5, name:"Student Hub Open Lab",      location:"Student Centre",        hours:"06:30 – 23:00", seats:20, occupied:5,  status:"open",   notes:"Open to all · No booking needed" }
+];
+let statusFilter = 'all';
+
+function renderLabs() {
+  const q = (document.getElementById('labSearch')?.value||'').toLowerCase();
+  const list = document.getElementById('labList');
+  const rows = LABS.filter(l =>
+    (statusFilter === 'all' || l.status === statusFilter) &&
+    (!q || l.name.toLowerCase().includes(q) || l.location.toLowerCase().includes(q))
+  );
+  if (!rows.length) { list.innerHTML = '<p style="color:var(--mid);font-size:.8rem;padding:.75rem 0">No labs match.</p>'; return; }
+  const fc = { open:'fill-open', busy:'fill-busy', closed:'fill-closed' };
+  list.innerHTML = rows.map(l => {
+    const pct = Math.round((l.occupied/l.seats)*100);
+    const sl  = l.status[0].toUpperCase() + l.status.slice(1);
+    return `
+      <div class="lab-card status-${l.status}">
+        <div class="lab-header">
+          <div class="lab-name">${l.name}</div>
+          <span class="status-pill ${l.status}">${sl}</span>
+        </div>
+        <div class="lab-meta">
+          <span>📍 <strong>${l.location}</strong></span>
+          <span>⏰ <strong>${l.hours}</strong></span>
+          <span>💺 <strong>${l.seats - l.occupied}/${l.seats}</strong> free</span>
+        </div>
+        <div class="busy-bar-wrap">
+          <div class="busy-label">Capacity: ${pct}% used</div>
+          <div class="busy-bar"><div class="busy-bar-fill ${fc[l.status]}" style="width:${pct}%"></div></div>
+        </div>
+        <p class="lab-note">ℹ ${l.notes}</p>
+      </div>`;
+  }).join('');
+}
+
+function filterByStatus(s, el) {
+  statusFilter = s;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('chip-active'));
+  el.classList.add('chip-active');
+  renderLabs();
+}
+
+// ── Tab switch ────────────────────────────────────
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => { p.classList.remove('active'); p.classList.add('hidden'); });
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + id)?.classList.replace('hidden','active');
+  btn.classList.add('active');
+}
+
+// ── Data Saver ────────────────────────────────────
+let dsOn = false;
+function toggleDataSaver() {
+  dsOn = !dsOn;
+  document.body.classList.toggle('data-saver', dsOn);
+  document.getElementById('dataSaverBanner').classList.toggle('hidden', !dsOn);
+  showToast(dsOn ? '⚡ Data Saver ON' : '🎨 Data Saver OFF');
+}
+
+// ── Network ───────────────────────────────────────
+function updateNet() {
+  const on = navigator.onLine;
+  document.getElementById('onlineBadge').classList.toggle('hidden', !on);
+  document.getElementById('offlineBadge').classList.toggle('hidden', on);
+}
+window.addEventListener('online', () => { updateNet(); showToast('✅ Back online'); });
+window.addEventListener('offline', () => { updateNet(); showToast('📴 Offline — files still available'); });
+
+// ── Toast ─────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.remove('hidden','fade');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.classList.add('fade'); setTimeout(() => t.classList.add('hidden'), 350); }, 3200);
+}
+
+// ── Util ──────────────────────────────────────────
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// ── Close modal on overlay click ──────────────────
+document.getElementById('previewModal').addEventListener('click', function(e) {
+  if (e.target === this) closePreview();
+});
+
+// ── Init ──────────────────────────────────────────
+(async () => {
+  updateNet();
+  renderLabs();
+  await renderShareList();
+  await updateStorage();
+})();
+</script>
+</body>
+</html>
